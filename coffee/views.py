@@ -12,9 +12,9 @@ from rest_framework.generics import ListCreateAPIView, UpdateAPIView, CreateAPIV
 from rest_framework import status
 from rest_framework.response import Response
 import json
-from .serializers import ItemSerializer, DayScheduleSerializer
+from .serializers import ItemSerializer, DayScheduleSerializer, ReceiptItemSerializer, ReceiptSerializer
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Item, DaySchedule, Receipt
+from .models import Item, DaySchedule, Receipt, ReceiptItem
 
 #ITEMS
 
@@ -97,7 +97,7 @@ def patcItemByName(request, name):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response({'error': 'Bad JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['PATCH'])
@@ -112,7 +112,7 @@ def patcItemById(request, id):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response({'error': 'Bad JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 #USERS
@@ -172,39 +172,39 @@ def authentication(request, format=None):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def getDayShechuleById(request, id):
+def getDayScheduleById(request, id):
     try:
-        shechule = DaySchedule.objects.get(id=id)
+        schedule = DaySchedule.objects.get(id=id)
     except ObjectDoesNotExist  as e: return Response({"Error":"Wrong day schedule id"}, status=status.HTTP_404_NOT_FOUND)
-    serializer = DayScheduleSerializer(shechule)
+    serializer = DayScheduleSerializer(schedule)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def getAllDayShechules(request):
+def getAllDaySchedules(request):
     try:
-        shechule = DaySchedule.objects.all().order_by('id')
+        schedule = DaySchedule.objects.all().order_by('id')
     except ObjectDoesNotExist  as e: return Response({"Error":"Wrong day schedule id"}, status=status.HTTP_404_NOT_FOUND)
-    serializer = DayScheduleSerializer(shechule, many = True)
+    serializer = DayScheduleSerializer(schedule, many = True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def getDayShechuleByDate(request, date):
+def getDayScheduleByDate(request, date):
     # print("DATE", date)
-    try: shechule = DaySchedule.objects.get(date=date)
+    try: schedule = DaySchedule.objects.get(date=date)
     except ObjectDoesNotExist  as e: return Response({"Error":"Wrong day schedule id"}, status=status.HTTP_404_NOT_FOUND)
-    serializer = DayScheduleSerializer(shechule)
+    serializer = DayScheduleSerializer(schedule)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def createDayShechule(request):
+def createDaySchedule(request):
     if request.user.groups.filter(name = 'Managers').exists():
         serializer = DayScheduleSerializer(data=request.data)
         if serializer.is_valid():
@@ -217,38 +217,135 @@ def createDayShechule(request):
 @api_view(['PATCH'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def patchDayShechuleByDate(request, date):
+def patchDayScheduleByDate(request, date):
     if request.user.groups.filter(name = 'Managers').exists():
-        try: shechule = DaySchedule.objects.get(date=date)
+        try: schedule = DaySchedule.objects.get(date=date)
         except ObjectDoesNotExist  as e: return Response({"Error":"Wrong day schedule date"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = DayScheduleSerializer(shechule, data=request.data, partial=True)
+        serializer = DayScheduleSerializer(schedule, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response({'error': 'Bad JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['PATCH'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
-def patchDayShechuleById(request, id):
+def patchDayScheduleById(request, id):
     if request.user.groups.filter(name = 'Managers').exists():
-        try: shechule = DaySchedule.objects.get(id=id)
+        try: schedule = DaySchedule.objects.get(id=id)
         except ObjectDoesNotExist: return Response(status=status.HTTP_404_NOT_FOUND)
         
-        serializer = DayScheduleSerializer(shechule, data=request.data, partial=True)
+        serializer = DayScheduleSerializer(schedule, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response({'error': 'Bad JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-#RECIEPT get patch delete 
+#RECIEPT 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def createReceipt(request):
+    serializer = ReceiptSerializer(data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def getReceiptById(request, id):
+    try:
+        receipt = Receipt.objects.get(id=id)
+    except ObjectDoesNotExist  as e: return Response({"Error":"Wrong receipt id"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ReceiptSerializer(receipt )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def getReceiptByDate(request, date):
+    receipt = Receipt.objects.filter(date=date)
+    if len(receipt) == 0: return Response({"Error":"Wrong date"}, status=status.HTTP_404_NOT_FOUND)
 
+    serializer = ReceiptSerializer(receipt, many = True )
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# @api_view(['PATCH'])
+# @authentication_classes([TokenAuthentication, SessionAuthentication])
+# @permission_classes([IsAuthenticated])
+# def patchReceiptById(request, id):
+#     if request.user.groups.filter(name = 'Managers').exists():
+#         try: receipt = Receipt.objects.get(id=id)
+#         except ObjectDoesNotExist  as e: return Response({"Error":"Wrong receipt id"}, status=status.HTTP_404_NOT_FOUND)
+        
+#         serializer = ReceiptSerializer(receipt, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
+#     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def deleteReceiptById(request, id):
+    if request.user.groups.get(name = 'Managers').exists():
+        try: receipt = Receipt.objects.filter(id=id)
+        except ObjectDoesNotExist  as e: return Response({"Error":"Wrong receipt id"}, status=status.HTTP_404_NOT_FOUND)
+        receipt.delete()
+        return Response({"Done":"Reciept deleted"}, status=status.HTTP_200_OK)
+    return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 #RECIEPT ITEM
 
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def createReceiptItem(request):
+    serializer = ReceiptItemSerializer(data = request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def getReceiptItem(request, id):
+    try:
+        reciept_item = ReceiptItem.objects.get(id=id)
+    except ObjectDoesNotExist  as e: return Response({"Error":"Wrong reciept item id"}, status=status.HTTP_404_NOT_FOUND)
+    serializer= ReceiptItemSerializer(reciept_item)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def deleteReceiptItem(request, id):
+    try:
+        reciept_item = ReceiptItem.objects.get(id=id)
+    except ObjectDoesNotExist  as e: return Response({"Error":"Wrong reciept item id"}, status=status.HTTP_404_NOT_FOUND)
+    reciept_item.delete()
+    return Response({"Done":"Reciept item deleted"}, status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def patchReceiptItem(request, id):
+    try:
+        reciept_item = ReceiptItem.objects.get(id=id)
+    except ObjectDoesNotExist  as e: return Response({"Error":"Wrong reciept item id"}, status=status.HTTP_404_NOT_FOUND)
+    serializer = ReceiptItemSerializer(reciept_item, data = request.data, partial = True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response({'error': 'Bad JSON or JSON content'}, status=status.HTTP_400_BAD_REQUEST)

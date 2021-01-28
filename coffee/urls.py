@@ -27,12 +27,23 @@ urlpatterns = [
     path('create-manager', views.createManager, name = 'create-manager'),
     path('create-barista', views.createBarista, name = 'create-barista'),
 
-    path('create-day-shedule', views.createDayShechule, name = 'create-day-shedule'),
-    path('get-day-shedule-date-by-id/<str:id>/', views.getDayShechuleById, name = 'get-day-shedule-date-by-id'),
-    path('get-day-shedule-date-by-date/<yyyy:date>/', views.getDayShechuleByDate, name = 'get-day-shedule-date-by-date'),
-    path('get-all-day-shedule', views.getAllDayShechules, name = 'get-all-day-shedule'),
-    path('patch-day-shedule-by-id/<str:id>/', views.patchDayShechuleById, name = 'patch-day-shedule-by-id'),
-    path('patch-day-shedule-by-date/<yyyy:date>/', views.patchDayShechuleByDate, name = 'patch-day-shedule-by-date'),
+    path('create-day-schedule', views.createDaySchedule, name = 'create-day-schedule'),
+    path('get-day-schedule-date-by-id/<str:id>/', views.getDayScheduleById, name = 'get-day-schedule-date-by-id'),
+    path('get-day-schedule-date-by-date/<yyyy:date>/', views.getDayScheduleByDate, name = 'get-day-schedule-date-by-date'),
+    path('get-all-day-schedule', views.getAllDaySchedules, name = 'get-all-day-schedule'),
+    path('patch-day-schedule-by-id/<str:id>/', views.patchDayScheduleById, name = 'patch-day-schedule-by-id'),
+    path('patch-day-schedule-by-date/<yyyy:date>/', views.patchDayScheduleByDate, name = 'patch-day-schedule-by-date'),
+
+    path('create-receipt', views.createReceipt, name = 'create-receipt'),
+    path('get-receipt-by-id/<str:id>/', views.getReceiptById, name = 'get-receipt-by-id'),
+    path('get-receipt-by-date/<yyyy:date>/', views.getReceiptByDate, name = 'get-receipt-by-date'),
+    # path('patch-receipt/<str:id>/', views.patchReceiptById, name = 'patch-receipt'),
+    path('delete-receipt/<str:id>/', views.deleteReceiptById, name = 'delete-receipt'),
+
+    path('create-receipt-item', views.createReceiptItem, name = 'create-receipt-item'),
+    path('delete-receipt-item/<str:id>/', views.deleteReceiptItem, name = 'delete-receipt-item'),
+    path('patch-receipt-item/<str:id>/', views.patchReceiptItem, name = 'patch-receipt-item'),
+    path('get-receipt-item/<str:id>/', views.getReceiptItem, name = 'get-receipt-item'),
 
     path('auth', views.authentication, name = 'authentication')
 ]

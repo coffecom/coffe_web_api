@@ -36,6 +36,8 @@ class Receipt(models.Model):
     creator =  models.ForeignKey(User,  on_delete=models.CASCADE)
 
 class ReceiptItem(models.Model):
-    item_id = models.ForeignKey(Item,  on_delete=models.CASCADE)
-    receipt_id = models.ForeignKey(Receipt,  on_delete=models.CASCADE)
+    item = models.ForeignKey(Item,  on_delete=models.CASCADE)
+    receipt_id = models.ForeignKey(Receipt,  related_name='items', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+    def __str__(self):
+        return str(self.quantity) + " of " + self.item.name + " with cost:" + str(self.item.cost) 

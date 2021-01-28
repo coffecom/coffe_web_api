@@ -21,14 +21,30 @@ class DayScheduleSerializer(serializers.ModelSerializer):
 
         # ret['creator'] = obj.creator.username
 
-        return ret 
-
+        
 class ReceiptItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReceiptItem
         fields = '__all__'
 
+
+    def to_representation(self, obj):
+        ret = super(ReceiptItemSerializer, self).to_representation(obj)
+        ret['item'] = obj.item.name + " with cost:" + str(obj.item.cost)
+        return ret 
+        
+    def __str__(self):
+        return f"{self.quantity} of {self.item}"
+
 class ReceiptSerializer(serializers.ModelSerializer):
+    items = serializers.StringRelatedField(many = True)
+
     class Meta:
         model = Receipt
         fields = '__all__'
+
+    def to_representation(self, obj):
+        ret = super(ReceiptSerializer, self).to_representation(obj)
+        ret['creator'] = obj.creator.username
+
+        return ret 
