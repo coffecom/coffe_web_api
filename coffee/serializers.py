@@ -19,6 +19,7 @@ class DayScheduleSerializer(serializers.ModelSerializer):
         ret['emploee_after_12_1'] = obj.emploee_after_12_1.username
         ret['emploee_after_12_2'] = obj.emploee_after_12_2.username
 
+        return ret
         # ret['creator'] = obj.creator.username
 
         

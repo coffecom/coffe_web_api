@@ -31,12 +31,13 @@ def getAllItems(request):
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def createItem(request):
-    serializer = ItemSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
+    if request.user.groups.filter(name = 'Managers').exists():
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
@@ -119,19 +120,22 @@ def patcItemById(request, id):
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def createManager(request):
-    userName = request.data['username']
-    userPass = request.data['password']
-    userMail = request.data['email']
+    if request.user.groups.filter(name = 'Managers').exists():
+        userName = request.data['username']
+        userPass = request.data['password']
+        userMail = request.data['email']
 
-    user = User.objects.create_user(username=userName,
-                                 email=userMail,
-                                 password=userPass)
+        user = User.objects.create_user(username=userName,
+                                    email=userMail,
+                                    password=userPass)
 
-    my_group = Group.objects.get(name='Managers') 
-    my_group.user_set.add(user)
-    return Response(status=status.HTTP_200_OK)
+        my_group = Group.objects.get(name='Managers') 
+        my_group.user_set.add(user)
+        return Response(status=status.HTTP_200_OK)
+    return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 @api_view(['POST'])
