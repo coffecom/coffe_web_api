@@ -302,7 +302,7 @@ def getReceiptByDate(request, date):
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 @permission_classes([IsAuthenticated])
 def deleteReceiptById(request, id):
-    if request.user.groups.get(name = 'Managers').exists():
+    if request.user.groups.filter(name = 'Managers').exists():
         try: receipt = Receipt.objects.filter(id=id)
         except ObjectDoesNotExist  as e: return Response({"Error":"Wrong receipt id"}, status=status.HTTP_404_NOT_FOUND)
         receipt.delete()
