@@ -12,7 +12,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class Item(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    is_available = models.BooleanField(default=False)
     description = models.CharField(max_length=500, null=True)
     cost = models.PositiveIntegerField()
 
