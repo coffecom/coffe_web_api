@@ -36,7 +36,7 @@ def createItem(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({"Result":"Item id created"}, status=status.HTTP_400_BAD_REQUEST)
     return Response({'error': 'User is not authorized or is not a Manager'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['DELETE'])
